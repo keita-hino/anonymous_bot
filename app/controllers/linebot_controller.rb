@@ -6,10 +6,11 @@ class LinebotController < ApplicationController
 
  def client
    @client ||= Line::Bot::Client.new { |config|
-     config.channel_secret = ENV["LINE_CHANNEL_SECRET"]
-     config.channel_token = ENV["LINE_CHANNEL_TOKEN"]
+     config.channel_secret = ENV["ANONYMOUS_LINE_CHANNEL_SECRET"]
+     config.channel_token = ENV["ANONYMOUS_LINE_CHANNEL_TOKEN"]
    }
  end
+
 
  def callback
    body = request.body.read
@@ -26,13 +27,11 @@ class LinebotController < ApplicationController
      when Line::Bot::Event::Message
        case event.type
        when Line::Bot::Event::MessageType::Text
-         case event.message['text']
-           message = {
-             type: "text",
-             text: event.message['text']
-           }
-           client.reply_message(event['replyToken'], message)
-         end
+         message = {
+           type: "text",
+           text: event.message['text']
+         }
+         client.reply_message(event['replyToken'], message)
        end
      end
    }
