@@ -11,7 +11,6 @@ class LinebotController < ApplicationController
    }
  end
 
-
  def callback
    body = request.body.read
 
@@ -26,13 +25,27 @@ class LinebotController < ApplicationController
      case event
      when Line::Bot::Event::Message
        case event.type
+       # テキストが送られた時の処理
        when Line::Bot::Event::MessageType::Text
          message = {
            type: "text",
            text: event.message['text']
          }
-         client.reply_message(event['replyToken'], message)
+         to = Lineuser.pluck("userid")
+         client.multicast(to,message)
        end
+     # botと友達になった時 or ブロックが解除された時の処理
+     when Line::Bot::Event::Follow
+       user_id = event["source"]["userId"]
+       unless Lineuser.exists?(userid:user_id)
+         lineuser = Lineuser.new(userid: user_id)
+         lineuser.save
+         to = Lineuser.pluck("userid")
+       end
+     # ブロックされた時の処理
+     when Line::Bot::Event::Unfollow
+       user_id = event["source"]["userId"]
+       Lineuser.where(userid: user_id).delete_all
      end
    }
 
