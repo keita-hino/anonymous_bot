@@ -35,6 +35,7 @@ class LinebotController < ApplicationController
 
          Lineuser.select("userid").each {|u| to.push(u["userid"])}
 
+
          client.multicast(to,message)
        end
      # botと友達になった時 or ブロックが解除された時の処理
